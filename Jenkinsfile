@@ -1,13 +1,18 @@
 pipeline {
-  agent none
+	agent none  
   stages {
-    stage('Maven Install') {
-      agent {
-        docker {
-          image 'maven:3.9.5-eclipse-temurin-21-alpine'
-        }
-        steps {
-          sh 'mvn clean install'
+  	stage('Docker Build') {
+    	agent any
+      steps {
+      	sh 'docker build -t shimulsaha/gamer-dir-service:latest .'
+      }
+    }
+    stage('Docker Push') {
+    	agent any
+      steps {
+      	withCredentials([usernamePassword(credentialsId: 'my_docker_Hub', passwordVariable: 'dockerHubPassword', usernameVariable: 'dockerHubUser')]) {
+        	sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPassword}"
+          sh 'docker push shimulsaha/gamer-dir-service:latest'
         }
       }
     }
